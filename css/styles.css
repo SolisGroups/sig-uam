@@ -1,0 +1,361 @@
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navbar : Augmentation légère de la hauteur pour confort tactile */
+#main-nav {
+    height: 60px;
+}
+
+/* Layout Principal */
+#main-container {
+    height: calc(100vh - 60px);
+    display: flex;
+    margin-top: 60px;
+    /* On pousse le contenu sous la navbar */
+    flex-direction: row;
+}
+
+/* TOC (Table of Contents) */
+#toc-panel {
+    width: 280px;
+    min-width: 280px;
+    /* Empêche l'écrasement */
+    overflow-y: auto;
+    background: #f8f9fa;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    flex-shrink: 0;
+    transition: transform 0.3s ease, margin-left 0.3s ease;
+    position: relative;
+}
+
+/* Panneau réduit */
+#toc-panel.collapsed {
+    margin-left: -280px;
+}
+
+/* Bouton de fermeture du panneau */
+.btn-collapse {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px 10px;
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+.btn-collapse:hover {
+    transform: scale(1.2);
+}
+
+#toc-panel.collapsed .btn-collapse i {
+    transform: rotate(180deg);
+}
+
+/* Carte */
+#map-wrapper {
+    flex-grow: 1;
+    flex-shrink: 1;
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Correction pour mobile - Affichage responsive */
+@media (max-width: 768px) {
+    #main-container {
+        flex-direction: column;
+        height: calc(100vh - 60px);
+    }
+
+    #toc-panel {
+        width: 100%;
+        min-width: 100%;
+        max-height: 40vh;
+        order: 1;
+        border-right: none;
+        border-bottom: 2px solid #dee2e6;
+        transition: max-height 0.3s ease;
+    }
+
+    #toc-panel.collapsed {
+        max-height: 0;
+        margin-left: 0;
+        overflow: hidden;
+        border-bottom: none;
+    }
+
+    #map-wrapper {
+        order: 2;
+        flex: 1;
+        min-height: 0;
+        height: auto;
+    }
+
+    #map {
+        position: relative;
+        height: 100%;
+    }
+
+    /* Amélioration tactile pour mobile */
+    .layer-card {
+        touch-action: manipulation;
+    }
+
+    .btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 8px 12px;
+    }
+
+    /* Boutons flottants plus petits sur mobile */
+    .floating-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .floating-btn-left {
+        top: 10px;
+        left: 10px;
+    }
+
+    .floating-btn-bottom-right {
+        bottom: 70px;
+        right: 10px;
+    }
+
+    #toc-panel.collapsed ~ #map-wrapper .floating-btn-left {
+        display: flex !important;
+    }
+
+    /* Légende plus petite sur mobile */
+    #legend-panel {
+        max-width: 180px;
+        font-size: 0.75rem;
+        bottom: 15px;
+        right: 5px;
+    }
+
+    .legend-header {
+        padding: 8px 12px;
+    }
+
+    .legend-header h6 {
+        font-size: 12px;
+    }
+
+    #legend-content {
+        padding: 8px 12px;
+        max-height: calc(40vh - 50px);
+    }
+
+    /* En-tête du panneau sur mobile */
+    .panel-header {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+
+    .btn-collapse {
+        font-size: 14px;
+    }
+}
+
+/* Mode paysage sur mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    #main-container {
+        flex-direction: row;
+    }
+
+    #toc-panel {
+        width: 250px;
+        min-width: 250px;
+        max-height: none;
+        height: 100%;
+        border-right: 2px solid #dee2e6;
+        border-bottom: none;
+    }
+
+    #toc-panel.collapsed {
+        margin-left: -250px;
+        max-height: none;
+        overflow-y: auto;
+        border-right: 2px solid #dee2e6;
+    }
+
+    #map-wrapper {
+        flex: 1;
+    }
+
+    .floating-btn-left {
+        top: 15px;
+        left: 15px;
+    }
+}
+
+/* --- GESTION DES SUPERPOSITIONS --- */
+
+/* Boutons flottants sur la carte */
+.floating-btn {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #2c3e50;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.floating-btn:hover {
+    background: #3498db;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.floating-btn-left {
+    top: 20px;
+    left: 20px;
+    display: none; /* Masqué par défaut */
+}
+
+#toc-panel.collapsed ~ #map-wrapper .floating-btn-left {
+    display: flex; /* Affiché quand le panneau est fermé */
+}
+
+.floating-btn-bottom-right {
+    bottom: 80px;
+    right: 20px;
+}
+
+/* 1. Légende : En bas à DROITE, mais un peu remontée pour ne pas toucher le bord */
+#legend-panel {
+    position: absolute;
+    bottom: 30px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    /* Au-dessus de Leaflet */
+    max-width: 250px;
+    max-height: 50%;
+    overflow: hidden;
+    font-size: 0.85rem;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#legend-panel.hidden {
+    transform: translateX(120%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.legend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    border-bottom: 2px solid #3498db;
+}
+
+.legend-header h6 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.btn-legend-close {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: transform 0.2s ease;
+}
+
+.btn-legend-close:hover {
+    transform: scale(1.2);
+}
+
+#legend-content {
+    padding: 12px 15px;
+    max-height: calc(50vh - 60px);
+    overflow-y: auto;
+}
+
+/* 2. MiniMap : Forcée en bas à GAUCHE par le JS, ici on assure le style */
+.leaflet-control-minimap {
+    border: 2px solid #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+}
+
+/* Style des Popups (Tableau propre) */
+.leaflet-popup-content {
+    margin: 10px;
+    width: 280px !important;
+    /* Force la largeur */
+}
+
+.popup-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.popup-table td,
+.popup-table th {
+    border: 1px solid #ddd;
+    padding: 4px;
+}
+
+.popup-table th {
+    background-color: #f2f2f2;
+    text-align: left;
+    font-weight: bold;
+    width: 40%;
+}
+
+/* Style éléments légende */
+.legend-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.legend-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    border-radius: 3px;
+}

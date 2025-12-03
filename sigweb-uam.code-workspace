@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "../sig-app"
+		},
+		{
+			"path": "../Leaflet_tp"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../sig-uam"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "Leaflet_tp"
+	}
+}

@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG Web UAM - Complet</title>
+
+    <!-- PWA Configuration -->
+    <meta name="description" content="Système d'Information Géographique de l'Université Adventiste de Mudende">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SIG UAM">
+
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icônes pour iOS -->
+    <link rel="apple-touch-icon" href="img/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="img/icons/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="img/icons/icon-96x96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="img/icons/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="img/icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="img/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="img/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="img/icons/icon-384x384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="img/icons/icon-512x512.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="img/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/icons/icon-72x72.png">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-measure/3.1.0/leaflet-measure.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.min.css" />
+
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        /* ========================================
+           STYLES ESTHÉTIQUES POUR LE PANNEAU DE COUCHES
+           ======================================== */
+
+        /* Panneau principal des couches */
+        #toc-panel {
+            width: 280px;
+            min-width: 280px;
+            background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            border-right: 2px solid #dee2e6;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* En-tête du panneau */
+        #toc-panel .panel-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        #toc-panel .panel-header i {
+            font-size: 16px;
+            color: #3498db;
+        }
+
+        /* Conteneur scrollable des couches */
+        #layers-list {
+            padding: 12px !important;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* ========================================
+           CARTE DE COUCHE INDIVIDUELLE
+           ======================================== */
+        .layer-card {
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 2px solid #e0e0e0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .layer-card:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .layer-card.active {
+            border-color: #27ae60;
+        }
+
+        .layer-card.active:hover {
+            border-color: #2ecc71;
+        }
+
+        /* Item de couche */
+        .layer-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* ========================================
+           CHECKBOXES PERSONNALISÉES
+           ======================================== */
+        .custom-checkbox {
+            position: relative;
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            margin: 0;
+        }
+
+        .custom-checkbox .check-mark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .custom-checkbox input:hover~.check-mark {
+            border-color: #3498db;
+            background: #f0f8ff;
+        }
+
+        .custom-checkbox input:checked~.check-mark {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border-color: #27ae60;
+            box-shadow: 0 2px 8px rgba(39, 174, 96, 0.4);
+        }
+
+        .custom-checkbox input:checked~.check-mark::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            animation: checkMark 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes checkMark {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(-45deg);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.2) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            }
+        }
+
+        /* ========================================
+           INDICATEURS DE COULEUR / SYMBOLES
+           ======================================== */
+        .layer-symbol {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            border: 2px solid white;
+        }
+
+        /* Symbole Polygone (Arrondissements) - Orange */
+        .layer-symbol.polygon {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+        }
+
+        .layer-symbol.polygon::before {
+            content: '';
+            width: 14px;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid white;
+            border-radius: 2px;
+        }
+
+        /* Symbole Ligne (Rails) - Noir avec tirets */
+        .layer-symbol.line-rail {
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+        }
+
+        .layer-symbol.line-rail::before {
+            content: '';
+            width: 16px;
+            height: 0;
+            border-top: 3px dashed white;
+        }
+
+        /* Symbole Ligne (Routes) - Rouge */
+        .layer-symbol.line-route {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .layer-symbol.line-route::before {
+            content: '';
+            width: 16px;
+            height: 3px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        /* Symbole Point (Localités) - Violet */
+        .layer-symbol.point {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+
+        .layer-symbol.point::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* ========================================
+           INFOS DE LA COUCHE
+           ======================================== */
+        .layer-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .layer-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .layer-type {
+            font-size: 11px;
+            color: #7f8c8d;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .layer-type i {
+            font-size: 10px;
+        }
+
+        /* ========================================
+           BOUTON ZOOM
+           ======================================== */
+        .layer-zoom-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: #ecf0f1;
+            border-radius: 6px;
+            color: #7f8c8d;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            opacity: 0;
+            flex-shrink: 0;
+        }
+
+        .layer-card:hover .layer-zoom-btn {
+            opacity: 1;
+        }
+
+        .layer-zoom-btn:hover {
+            background: #3498db;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* ========================================
+           MESSAGE DE CHARGEMENT
+           ======================================== */
+        .loading-message {
+            text-align: center;
+            padding: 30px 15px;
+            color: #95a5a6;
+        }
+
+        .loading-message i {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #bdc3c7;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .loading-message p {
+            font-size: 13px;
+            margin: 0;
+        }
+
+        /* ========================================
+           STYLES MODAUX AMÉLIORÉS
+           ======================================== */
+        .modal-content {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            border-bottom: none;
+            padding: 18px 24px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 16px 24px;
+        }
+
+        /* Select améliorés */
+        .form-select,
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 10px 14px;
+            transition: all 0.2s;
+        }
+
+        .form-select:focus,
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+        }
+
+        /* Boutons améliorés */
+        .btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        @media (max-width: 768px) {
+            #toc-panel {
+                width: 100%;
+                min-width: 100%;
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-xl navbar-dark bg-dark fixed-top" id="main-nav">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="img/uam.jpg" alt="Logo" width="30" height="30"
+                    class="d-inline-block align-text-top me-2 rounded">
+                SIG UAM
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item"><a class="nav-link active" href="#"><i class="fa fa-home"></i> Accueil</a></li>
+
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal"
+                            data-bs-target="#modalCatalog"><i class="fa fa-book"></i> Catalogue</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal"
+                            data-bs-target="#modalSearch"><i class="fa fa-search"></i> Rechercher</a></li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fa fa-filter"></i> Requêtes
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalAttr"><i
+                                        class="fa fa-font"></i> Par Attribut</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="activateSpatialTool(); return false;"><i
+                                        class="fa fa-pencil-alt"></i> Par Dessin (Rectangle)</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#modalSpatialAdvanced"><i class="fa fa-layer-group"></i> Croisement
+                                    de Couches</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal"
+                            data-bs-target="#modalDownload"><i class="fa fa-download"></i> Téléchargement</a></li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-2 border-start ps-3 ms-2 tool-group">
+                    <span class="text-secondary small fw-bold d-none d-xxl-block">OUTILS:</span>
+
+                    <button class="btn btn-sm btn-outline-success" onclick="activateGPS()" title="Ma Position GPS" id="gps-button">
+                        <i class="fa fa-location-crosshairs"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-light" onclick="triggerMeasure('distance')"
+                        title="Mesurer Distance">
+                        <i class="fa fa-ruler-horizontal"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-light" onclick="triggerMeasure('surface')"
+                        title="Mesurer Surface">
+                        <i class="fa fa-draw-polygon"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-light" onclick="zoomToGlobal()" title="Vue Globale">
+                        <i class="fa fa-globe"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="triggerPrint()" title="Imprimer la carte">
+                        <i class="fa fa-print"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid p-0 d-flex" id="main-container">
+        <!-- ========================================
+             PANNEAU DE COUCHES AMÉLIORÉ
+             ======================================== -->
+        <div id="toc-panel">
+            <div class="panel-header">
+                <i class="fa fa-layer-group"></i>
+                <span>Couches</span>
+                <button class="btn-collapse" onclick="toggleTOCPanel()" title="Masquer le panneau">
+                    <i class="fa fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <div id="layers-list">
+                <!-- Message de chargement initial -->
+                <div class="loading-message" id="loading-layers">
+                    <i class="fa fa-layer-group"></i>
+                    <p>Chargement des couches...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="map-wrapper" class="flex-grow-1 position-relative">
+            <!-- Bouton pour réouvrir le panneau des couches -->
+            <button id="btn-show-toc" class="floating-btn floating-btn-left" onclick="toggleTOCPanel()" title="Afficher les couches">
+                <i class="fa fa-layer-group"></i>
+            </button>
+
+            <!-- Bouton pour afficher/masquer la légende -->
+            <button id="btn-toggle-legend" class="floating-btn floating-btn-bottom-right" onclick="toggleLegend()" title="Afficher/Masquer la légende">
+                <i class="fa fa-list"></i>
+            </button>
+
+            <div id="map"></div>
+
+            <div id="legend-panel" class="leaflet-control">
+                <div class="legend-header">
+                    <h6 class="mb-0">Légende</h6>
+                    <button class="btn-legend-close" onclick="toggleLegend()" title="Masquer la légende">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <div id="legend-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL CATALOGUE ===== -->
+    <div class="modal fade" id="modalCatalog" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fa fa-book"></i> Catalogue des Couches</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Voici les couches disponibles dans cette application SIG :</p>
+                    <div id="catalog-content">
+                        <div class="text-center text-muted">
+                            <em>Chargement en cours...</em>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAttr" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fa fa-filter me-2"></i>Requête Attributaire</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold"><i class="fa fa-layer-group me-1 text-primary"></i>Couche
+                            :</label>
+                        <select id="query-layer" class="form-select"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold"><i class="fa fa-columns me-1 text-primary"></i>Champ
+                            :</label>
+                        <select id="query-field" class="form-select" disabled></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold"><i class="fa fa-font me-1 text-primary"></i>Valeur
+                            :</label>
+                        <input type="text" id="query-value" class="form-control"
+                            placeholder="Entrez la valeur recherchée...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="runAttributeQuery()">
+                        <i class="fa fa-search me-1"></i>Rechercher
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalSpatialAdvanced" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fa fa-object-group me-2"></i>Croisement Spatial</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6 class="text-success border-bottom pb-2"><i class="fa fa-crosshairs me-2"></i>1. Couche Cible
+                        </h6>
+                        <select id="spatial-target-layer" class="form-select"></select>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-success border-bottom pb-2"><i class="fa fa-link me-2"></i>2. Relation</h6>
+                        <select id="spatial-relation" class="form-select">
+                            <option value="intersects">🔀 Intersecte</option>
+                            <option value="within">📍 Est à l'intérieur de</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-success border-bottom pb-2"><i class="fa fa-map-marker-alt me-2"></i>3. Zone de
+                            Référence</h6>
+                        <select id="spatial-ref-layer" class="form-select mb-3"></select>
+
+                        <div class="card p-3 bg-light border-0">
+                            <small class="text-muted mb-2 d-block"><i class="fa fa-filter me-1"></i>Filtre
+                                (Optionnel)</small>
+                            <div class="input-group">
+                                <select id="spatial-ref-field" class="form-select" style="max-width: 40%;"></select>
+                                <input type="text" id="spatial-ref-value" class="form-control" placeholder="Valeur...">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="spatial-adv-alert" class="alert mt-3 d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa fa-times me-1"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="runAdvancedSpatialQuery()">
+                        <i class="fa fa-play me-1"></i>Exécuter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalSearch" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="fa fa-search me-2"></i>Recherche Globale</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-light"><i class="fa fa-search text-muted"></i></span>
+                        <input type="text" id="global-search-input" class="form-control"
+                            placeholder="Nom d'un arrondissement, route, village...">
+                        <button class="btn btn-primary" onclick="runGlobalSearch()">
+                            <i class="fa fa-search me-1"></i>Chercher
+                        </button>
+                    </div>
+                    <div id="search-results-info" class="text-muted small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDownload" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="fa fa-download me-2"></i>Téléchargement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="text-muted mb-4">Choisissez le format d'export :</p>
+                    <div class="d-grid gap-3" style="max-width: 300px; margin: 0 auto;">
+                        <button class="btn btn-outline-success btn-lg" onclick="downloadData('geojson')">
+                            <i class="fa fa-globe me-2"></i>GeoJSON
+                        </button>
+                        <button class="btn btn-outline-warning btn-lg" onclick="downloadData('csv')">
+                            <i class="fa fa-file-csv me-2"></i>CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-measure/3.1.0/leaflet-measure.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.min.js"></script>
+
+    <script src="js/leaflet.browser.print.min.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        // Enregistrement du Service Worker pour PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sigweb-uam/sw.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker enregistré avec succès:', registration.scope);
+
+                        // Vérifie les mises à jour du Service Worker
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Nouvelle version disponible
+                                    if (confirm('Une nouvelle version de l\'application est disponible. Voulez-vous la mettre à jour maintenant?')) {
+                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('❌ Erreur lors de l\'enregistrement du Service Worker:', error);
+                    });
+
+                // Recharge la page lors de la prise de contrôle d'un nouveau Service Worker
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                        refreshing = true;
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+
+        // Détection de l'installation PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Empêche la mini-infobar d'apparaître sur mobile
+            e.preventDefault();
+            // Stocke l'événement pour pouvoir le déclencher plus tard
+            deferredPrompt = e;
+
+            // Affiche un bouton d'installation personnalisé (optionnel)
+            showInstallButton();
+        });
+
+        function showInstallButton() {
+            // Crée un bouton d'installation dans la navbar
+            const navbarNav = document.querySelector('.navbar-nav');
+            if (navbarNav && !document.getElementById('install-button')) {
+                const installLi = document.createElement('li');
+                installLi.className = 'nav-item';
+                installLi.id = 'install-button';
+
+                const installLink = document.createElement('a');
+                installLink.className = 'nav-link';
+                installLink.href = '#';
+                installLink.innerHTML = '<i class="fa fa-download"></i> Installer l\'App';
+                installLink.style.color = '#2ecc71';
+                installLink.style.fontWeight = '600';
+
+                installLink.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    if (deferredPrompt) {
+                        // Affiche le prompt d'installation
+                        deferredPrompt.prompt();
+                        // Attend la réponse de l'utilisateur
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log(`Installation PWA: ${outcome}`);
+                        // Reset deferredPrompt
+                        deferredPrompt = null;
+                        // Retire le bouton d'installation
+                        installLi.remove();
+                    }
+                });
+
+                installLi.appendChild(installLink);
+                navbarNav.appendChild(installLi);
+            }
+        }
+
+        // Détecte si l'app est lancée en mode PWA
+        window.addEventListener('DOMContentLoaded', () => {
+            const isInStandaloneMode = () =>
+                (window.matchMedia('(display-mode: standalone)').matches) ||
+                (window.navigator.standalone) ||
+                document.referrer.includes('android-app://');
+
+            if (isInStandaloneMode()) {
+                console.log('🚀 Application lancée en mode PWA');
+                // Ajoute une classe pour personnaliser l'interface en mode PWA
+                document.body.classList.add('pwa-mode');
+            }
+        });
+    </script>
+</body>
+
+</html>

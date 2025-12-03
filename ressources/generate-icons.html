@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'icônes PWA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 20px auto;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        #preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        .icon-preview {
+            text-align: center;
+        }
+        .icon-preview canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .icon-preview p {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        #status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Générateur d'Icônes PWA</h1>
+
+        <div class="info">
+            <h3>📝 Instructions:</h3>
+            <ol>
+                <li>Cliquez sur le bouton ci-dessous pour générer les icônes</li>
+                <li>Les icônes seront générées à partir du logo UAM (img/uam.jpg)</li>
+                <li>Cliquez sur chaque icône pour la télécharger</li>
+                <li>Placez toutes les icônes dans le dossier <code>img/icons/</code></li>
+            </ol>
+        </div>
+
+        <button onclick="generateIcons()">Générer les icônes PWA</button>
+
+        <div id="preview"></div>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+
+        async function generateIcons() {
+            const preview = document.getElementById('preview');
+            const status = document.getElementById('status');
+            preview.innerHTML = '';
+            status.innerHTML = '<p>⏳ Génération des icônes en cours...</p>';
+
+            try {
+                // Charge l'image source
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+
+                img.onload = function() {
+                    sizes.forEach(size => {
+                        // Crée un canvas pour chaque taille
+                        const canvas = document.createElement('canvas');
+                        canvas.width = size;
+                        canvas.height = size;
+                        const ctx = canvas.getContext('2d');
+
+                        // Arrière-plan blanc
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, size, size);
+
+                        // Dessine l'image centrée avec un padding
+                        const padding = size * 0.1;
+                        const imgSize = size - (padding * 2);
+                        ctx.drawImage(img, padding, padding, imgSize, imgSize);
+
+                        // Ajoute au preview
+                        const iconDiv = document.createElement('div');
+                        iconDiv.className = 'icon-preview';
+
+                        const previewCanvas = canvas.cloneNode(true);
+                        previewCanvas.style.width = '80px';
+                        previewCanvas.style.height = '80px';
+
+                        const label = document.createElement('p');
+                        label.textContent = `${size}x${size}`;
+
+                        const downloadBtn = document.createElement('button');
+                        downloadBtn.textContent = '⬇️ Télécharger';
+                        downloadBtn.style.fontSize = '12px';
+                        downloadBtn.style.padding = '5px 10px';
+                        downloadBtn.onclick = () => downloadIcon(canvas, size);
+
+                        iconDiv.appendChild(previewCanvas);
+                        iconDiv.appendChild(label);
+                        iconDiv.appendChild(downloadBtn);
+                        preview.appendChild(iconDiv);
+                    });
+
+                    status.innerHTML = '<p class="success">✅ Icônes générées avec succès! Cliquez sur chaque icône pour la télécharger.</p>';
+                };
+
+                img.onerror = function() {
+                    status.innerHTML = '<p class="error">❌ Erreur: Impossible de charger l\'image img/uam.jpg</p>';
+                };
+
+                img.src = 'img/uam.jpg';
+
+            } catch (error) {
+                status.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+            }
+        }
+
+        function downloadIcon(canvas, size) {
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon-${size}x${size}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }
+
+        // Auto-génération au chargement de la page
+        window.addEventListener('load', () => {
+            setTimeout(generateIcons, 500);
+        });
+    </script>
+</body>
+</html>

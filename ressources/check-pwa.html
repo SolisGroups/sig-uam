@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification PWA - SIG UAM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .check-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #ddd;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+
+        .check-section.success {
+            border-left-color: #27ae60;
+            background: #d4edda;
+        }
+
+        .check-section.error {
+            border-left-color: #e74c3c;
+            background: #f8d7da;
+        }
+
+        .check-section.warning {
+            border-left-color: #f39c12;
+            background: #fff3cd;
+        }
+
+        .check-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .check-message {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .icon {
+            font-size: 24px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .summary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .summary h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .summary .score {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .detail-card .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .success-color { color: #27ae60; }
+        .error-color { color: #e74c3c; }
+        .warning-color { color: #f39c12; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Vérification PWA</h1>
+            <p>Diagnostic de configuration de votre Progressive Web App</p>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">
+                <p>⏳ Analyse en cours...</p>
+            </div>
+
+            <div id="results" style="display: none;">
+                <div id="summary" class="summary"></div>
+                <div id="checks"></div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="location.href='index.html'">
+                        🏠 Ouvrir l'Application
+                    </button>
+                    <button class="btn btn-primary" onclick="location.href='generate-icons.html'">
+                        🎨 Générer les Icônes
+                    </button>
+                    <button class="btn btn-secondary" onclick="runChecks()">
+                        🔄 Re-vérifier
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const checks = [];
+        let successCount = 0;
+        let errorCount = 0;
+        let warningCount = 0;
+
+        function addCheck(title, message, status, icon) {
+            checks.push({ title, message, status, icon });
+            if (status === 'success') successCount++;
+            else if (status === 'error') errorCount++;
+            else if (status === 'warning') warningCount++;
+        }
+
+        async function runChecks() {
+            checks.length = 0;
+            successCount = errorCount = warningCount = 0;
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            // Check 1: Service Worker Support
+            if ('serviceWorker' in navigator) {
+                addCheck(
+                    'Support Service Worker',
+                    'Votre navigateur supporte les Service Workers.',
+                    'success',
+                    '✅'
+                );
+            } else {
+                addCheck(
+                    'Support Service Worker',
+                    'Votre navigateur ne supporte pas les Service Workers. La PWA ne fonctionnera pas.',
+                    'error',
+                    '❌'
+                );
+            }
+
+            // Check 2: HTTPS
+            const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+            if (isSecure) {
+                addCheck(
+                    'Connexion Sécurisée',
+                    'La page est servie en HTTPS ou sur localhost.',
+                    'success',
+                    '🔒'
+                );
+            } else {
+                addCheck(
+                    'Connexion Sécurisée',
+                    'La PWA nécessite HTTPS pour fonctionner. Utilisez HTTPS ou localhost.',
+                    'error',
+                    '⚠️'
+                );
+            }
+
+            // Check 3: Manifest
+            try {
+                const response = await fetch('manifest.json');
+                if (response.ok) {
+                    const manifest = await response.json();
+                    addCheck(
+                        'Fichier Manifest',
+                        `Manifest trouvé: "${manifest.name}" - ${manifest.icons?.length || 0} icônes définies.`,
+                        'success',
+                        '📄'
+                    );
+                } else {
+                    addCheck(
+                        'Fichier Manifest',
+                        'Le fichier manifest.json est introuvable.',
+                        'error',
+                        '❌'
+                    );
+                }
+            } catch (error) {
+                addCheck(
+                    'Fichier Manifest',
+                    'Erreur lors de la lecture du manifest.json.',
+                    'error',
+                    '❌'
+                );
+            }
+
+            // Check 4: Service Worker Registration
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        addCheck(
+                            'Service Worker Enregistré',
+                            `Service Worker actif sur: ${registration.scope}`,
+                            'success',
+                            '⚙️'
+                        );
+                    } else {
+                        addCheck(
+                            'Service Worker Enregistré',
+                            'Aucun Service Worker enregistré. Ouvrez index.html pour l\'enregistrer.',
+                            'warning',
+                            '⚠️'
+                        );
+                    }
+                } catch (error) {
+                    addCheck(
+                        'Service Worker Enregistré',
+                        'Impossible de vérifier le Service Worker.',
+                        'warning',
+                        '⚠️'
+                    );
+                }
+            }
+
+            // Check 5: Icons
+            const iconSizes = [72, 96, 128, 144, 152, 192, 384, 512];
+            let foundIcons = 0;
+            for (const size of iconSizes) {
+                try {
+                    const response = await fetch(`img/icons/icon-${size}x${size}.png`, { method: 'HEAD' });
+                    if (response.ok) foundIcons++;
+                } catch (error) {
+                    // Icon not found
+                }
+            }
+
+            if (foundIcons === iconSizes.length) {
+                addCheck(
+                    'Icônes PWA',
+                    `Toutes les icônes sont présentes (${foundIcons}/${iconSizes.length}).`,
+                    'success',
+                    '🎨'
+                );
+            } else if (foundIcons > 0) {
+                addCheck(
+                    'Icônes PWA',
+                    `Certaines icônes sont manquantes (${foundIcons}/${iconSizes.length}). Utilisez generate-icons.html.`,
+                    'warning',
+                    '⚠️'
+                );
+            } else {
+                addCheck(
+                    'Icônes PWA',
+                    `Aucune icône trouvée (${foundIcons}/${iconSizes.length}). Générez-les avec generate-icons.html.`,
+                    'error',
+                    '❌'
+                );
+            }
+
+            // Check 6: Offline Support
+            const isOnline = navigator.onLine;
+            addCheck(
+                'État de Connexion',
+                isOnline ? 'Vous êtes connecté à Internet.' : 'Vous êtes hors ligne.',
+                isOnline ? 'success' : 'warning',
+                isOnline ? '🌐' : '📡'
+            );
+
+            // Check 7: Installation Prompt
+            addCheck(
+                'Prompt d\'Installation',
+                'Le prompt d\'installation apparaît automatiquement si tous les critères sont remplis.',
+                'success',
+                '📲'
+            );
+
+            displayResults();
+        }
+
+        function displayResults() {
+            const totalChecks = checks.length;
+            const score = Math.round((successCount / totalChecks) * 100);
+
+            // Summary
+            const summaryHTML = `
+                <h2>Résultat du Diagnostic</h2>
+                <div class="score">${score}%</div>
+                <div class="details">
+                    <div class="detail-card">
+                        <div class="number success-color">${successCount}</div>
+                        <div class="label">Réussis</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="number warning-color">${warningCount}</div>
+                        <div class="label">Avertissements</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="number error-color">${errorCount}</div>
+                        <div class="label">Erreurs</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('summary').innerHTML = summaryHTML;
+
+            // Checks
+            let checksHTML = '';
+            checks.forEach(check => {
+                checksHTML += `
+                    <div class="check-section ${check.status}">
+                        <div class="check-title">
+                            <span class="icon">${check.icon}</span>
+                            <span>${check.title}</span>
+                        </div>
+                        <div class="check-message">${check.message}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('checks').innerHTML = checksHTML;
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+        }
+
+        // Run checks on page load
+        window.addEventListener('load', () => {
+            setTimeout(runChecks, 500);
+        });
+    </script>
+</body>
+</html>
