@@ -3,12 +3,14 @@
 ## 🎯 Fonctionnalités Mobiles Ajoutées
 
 ### ✅ Nouvelle Fonctionnalité GPS
+
 - **Bouton GPS** dans la barre d'outils (icône verte avec croix de localisation)
 - **Suivi en temps réel** de votre position
 - **Précision affichée** avec cercle de précision
 - **Activation/Désactivation** en un clic
 
 ### ✅ Affichage Responsive Corrigé
+
 - **Mode Portrait** : Panneau de couches en haut, carte en bas
 - **Mode Paysage** : Panneau de couches à gauche, carte à droite
 - **Auto-ajustement** lors du changement d'orientation
@@ -36,6 +38,7 @@
 ### Informations Affichées
 
 Lorsque le GPS est actif, vous verrez :
+
 - **Marqueur bleu** : Votre position exacte
 - **Cercle bleu** : Zone de précision (rayon en mètres)
 - **Popup** : Coordonnées GPS et précision
@@ -53,12 +56,14 @@ Lorsque le GPS est actif, vous verrez :
 ### Problème 1 : La carte ne s'affiche pas
 
 #### Symptômes
+
 - Écran blanc ou gris à la place de la carte
 - Seuls les boutons et le panneau sont visibles
 
 #### Solutions
 
 **Solution 1 : Rechargez la page**
+
 ```
 Tirez vers le bas pour actualiser
 ou
@@ -66,11 +71,13 @@ Fermez et rouvrez l'application
 ```
 
 **Solution 2 : Vérifiez votre connexion**
+
 - Assurez-vous d'avoir une connexion Internet active
 - Le premier chargement nécessite Internet
 - Après, l'app fonctionne hors ligne
 
 **Solution 3 : Videz le cache**
+
 1. Menu du navigateur → Paramètres
 2. Confidentialité → Données de navigation
 3. Cochez "Images et fichiers en cache"
@@ -78,6 +85,7 @@ Fermez et rouvrez l'application
 5. Rechargez l'application
 
 **Solution 4 : Changez l'orientation**
+
 - Passez en mode paysage
 - Attendez 2 secondes
 - Repassez en mode portrait
@@ -85,6 +93,7 @@ Fermez et rouvrez l'application
 ### Problème 2 : Le GPS ne fonctionne pas
 
 #### Symptômes
+
 - Message "Permission GPS refusée"
 - Le GPS ne trouve pas votre position
 - Le bouton reste en mode recherche
@@ -94,6 +103,7 @@ Fermez et rouvrez l'application
 **Solution 1 : Autorisez la géolocalisation**
 
 **Sur Android (Chrome) :**
+
 1. Paramètres du téléphone → Applications
 2. Trouvez votre navigateur (Chrome, Firefox, etc.)
 3. Autorisations → Localisation
@@ -101,21 +111,25 @@ Fermez et rouvrez l'application
 5. Rechargez l'application
 
 **Sur iOS (Safari) :**
+
 1. Réglages → Confidentialité et sécurité
 2. Service de localisation → Safari
 3. Activez "Pendant l'utilisation de l'app"
 4. Rechargez l'application
 
 **Solution 2 : Activez le GPS du téléphone**
+
 - Vérifiez que le GPS est activé dans les paramètres
 - Activez la "Précision de localisation améliorée" si disponible
 
 **Solution 3 : Testez en extérieur**
+
 - Le GPS fonctionne mieux en extérieur
 - Éloignez-vous des grands bâtiments
 - Attendez quelques secondes pour l'acquisition satellite
 
 **Solution 4 : Vérifiez les permissions dans le navigateur**
+
 1. Cliquez sur le cadenas (🔒) dans la barre d'adresse
 2. Vérifiez que "Localisation" est "Autorisée"
 3. Si bloquée, changez en "Autoriser"
@@ -124,6 +138,7 @@ Fermez et rouvrez l'application
 ### Problème 3 : La carte est décalée ou mal alignée
 
 #### Solution
+
 ```javascript
 // La carte se recalibre automatiquement, mais vous pouvez :
 1. Changez l'orientation de votre téléphone
@@ -136,16 +151,19 @@ Fermez et rouvrez l'application
 #### Solutions
 
 **Solution 1 : Vérifiez l'activation des couches**
+
 - Ouvrez le panneau de couches (en haut sur mobile)
 - Vérifiez que les cases sont cochées (vertes)
 - Décochez puis recochez la couche
 
 **Solution 2 : Rechargez les données**
+
 - Fermez complètement l'application
 - Videz le cache du navigateur
 - Rouvrez l'application
 
 **Solution 3 : Vérifiez le zoom**
+
 - Certaines couches ne sont visibles qu'à certains niveaux de zoom
 - Zoomez/dézoomez pour voir les couches
 
@@ -154,26 +172,31 @@ Fermez et rouvrez l'application
 #### Solutions
 
 **Solution 1 : Désactivez les couches inutiles**
+
 - Gardez seulement les couches nécessaires activées
 - Moins de couches = meilleure performance
 
 **Solution 2 : Fermez les autres applications**
+
 - Libérez la mémoire de votre téléphone
 - Fermez les onglets inutilisés
 
 **Solution 3 : Rechargez l'application**
+
 - Force la fermeture de l'app
 - Rouvrez-la
 
 ### Problème 6 : Le GPS est imprécis
 
 #### Causes possibles
+
 - Signal GPS faible
 - En intérieur ou dans un bâtiment
 - Météo (nuages épais, orages)
 - Téléphone en mode économie d'énergie
 
 #### Solutions
+
 - Sortez à l'extérieur
 - Activez la "Haute précision" dans les paramètres GPS
 - Désactivez le mode économie d'énergie
@@ -184,6 +207,7 @@ Fermez et rouvrez l'application
 ## 📐 Modes d'Affichage Mobile
 
 ### Mode Portrait (Vertical)
+
 ```
 ┌─────────────────┐
 │   Navigation    │
@@ -200,6 +224,7 @@ Fermez et rouvrez l'application
 ```
 
 ### Mode Paysage (Horizontal)
+
 ```
 ┌────────┬─────────────────┐
 │ Panel  │                 │
@@ -309,13 +334,15 @@ Si l'application ne se met pas à jour :
 
 ## 🌐 Fonctionnement Hors Ligne
 
-### Ce qui fonctionne hors ligne :
+### Ce qui fonctionne hors ligne
+
 ✅ Visualisation de la carte (si déjà visitée)
 ✅ Consultation des couches en cache
 ✅ Navigation dans l'interface
 ✅ GPS (utilise le GPS du téléphone)
 
-### Ce qui nécessite Internet :
+### Ce qui nécessite Internet
+
 ❌ Chargement initial des données
 ❌ Mise à jour des couches
 ❌ Fonds de carte détaillés
@@ -326,6 +353,7 @@ Si l'application ne se met pas à jour :
 ## 📊 Compatibilité
 
 ### Navigateurs Supportés
+
 - ✅ Chrome 90+ (Android)
 - ✅ Safari 15.4+ (iOS)
 - ✅ Firefox 88+ (Android)
@@ -333,6 +361,7 @@ Si l'application ne se met pas à jour :
 - ✅ Edge 90+ (Android)
 
 ### Systèmes d'Exploitation
+
 - ✅ Android 8.0+
 - ✅ iOS 15.4+
 
@@ -351,6 +380,7 @@ Si l'application ne se met pas à jour :
 ## 🎓 Tutoriel Vidéo (Simulation)
 
 ### 1. Installation de l'App (30 secondes)
+
 ```
 1. Ouvrez l'app dans Chrome/Safari
 2. Menu (⋮) → "Installer l'application"
@@ -359,6 +389,7 @@ Si l'application ne se met pas à jour :
 ```
 
 ### 2. Utilisation du GPS (45 secondes)
+
 ```
 1. Ouvrez l'app
 2. Cliquez sur le bouton GPS (vert)
@@ -369,6 +400,7 @@ Si l'application ne se met pas à jour :
 ```
 
 ### 3. Navigation de Base (1 minute)
+
 ```
 1. Pincer pour zoomer/dézoomer
 2. Glisser pour se déplacer
@@ -380,7 +412,7 @@ Si l'application ne se met pas à jour :
 ---
 
 **Version** : 2.0.0
-**Date** : 2025-12-03
+**Date** : 2026-12-03
 **Pour** : SIG Web UAM - Application Mobile
 
 ---
