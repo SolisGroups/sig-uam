@@ -157,7 +157,7 @@
             {
                 name: 'Service Worker actif',
                 test: async () => {
-                    if ('serviceWorker' not in navigator) return false;
+                    if (!('serviceWorker' in navigator)) return false;
                     const registrations = await navigator.serviceWorker.getRegistrations();
                     return registrations.length > 0;
                 }
