@@ -1,0 +1,81 @@
+{
+    "name": "SIG Web UAM",
+    "packageId": "com.sigweb.uam",
+    "appName": "SIG UAM - Cartographie",
+    "appVersion": "1.0.0",
+    "appVersionCode": 1,
+    "minSdkVersion": 21,
+    "targetSdkVersion": 33,
+    "description": "Application de cartographie interactive avec géolocalisation",
+    "url": "http://votre-domaine.com/sigweb-uam/",
+    "manifestUrl": "http://votre-domaine.com/sigweb-uam/manifest.json",
+    "startUrl": "/sigweb-uam/index.html",
+    "scope": "/sigweb-uam/",
+    "display": "standalone",
+    "orientation": "any",
+    "themeColor": "#3498db",
+    "backgroundColor": "#2c3e50",
+    "statusBarColor": "#2c3e50",
+    "navBarColor": "#2c3e50",
+    "enableNotifications": true,
+    "enableLocationSharing": true,
+    "keepAlive": true,
+    "allowUserInstall": true,
+    "allowUserUninstall": true,
+    "useBrowserOnUnsupportedPage": true,
+    "chromeOsOnly": false,
+    "relatedApplications": [],
+    "preferRelatedApplications": false,
+    "shortcuts": [
+        {
+            "name": "Localisation",
+            "shortName": "Localiser",
+            "description": "Obtenir votre position actuelle",
+            "url": "/sigweb-uam/index.html?action=locate",
+            "icons": [
+                {
+                    "src": "img/icons/icon-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Suivi GPS",
+            "shortName": "Suivi",
+            "description": "Enregistrer votre trajet",
+            "url": "/sigweb-uam/index.html?action=tracking",
+            "icons": [
+                {
+                    "src": "img/icons/icon-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "categories": [
+        "education",
+        "utilities",
+        "productivity"
+    ],
+    "screenshots": [
+        {
+            "src": "img/screenshots/mobile-screenshot.png",
+            "sizes": "540x720",
+            "type": "image/png",
+            "form_factor": "narrow"
+        }
+    ],
+    "iconPurpose": "any maskable",
+    "permissions": [
+        "geolocation",
+        "storage",
+        "notifications"
+    ],
+    "features": {
+        "gps": true,
+        "offline": true,
+        "installable": true,
+        "responsive": true,
+        "pushNotifications": false
+    }
+}

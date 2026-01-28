@@ -18,18 +18,18 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Recalculer la taille de la carte lors du redimensionnement
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function () {
     if (map) {
-        setTimeout(function() {
+        setTimeout(function () {
             map.invalidateSize();
         }, 100);
     }
 });
 
 // Recalculer la taille lors du changement d'orientation sur mobile
-window.addEventListener('orientationchange', function() {
+window.addEventListener('orientationchange', function () {
     if (map) {
-        setTimeout(function() {
+        setTimeout(function () {
             map.invalidateSize();
         }, 300);
     }
@@ -39,7 +39,7 @@ window.addEventListener('orientationchange', function() {
 
 function initMap() {
     // Attendre que le DOM soit complètement chargé
-    setTimeout(function() {
+    setTimeout(function () {
         map = L.map('map', {
             center: [14.514, -14.575],
             zoom: 7,
@@ -71,9 +71,11 @@ function initMap() {
         loadGeoJSONLayer('data/localites.geojson', 'Localités', 'Point');
 
         // Force le redimensionnement de la carte après l'initialisation
-        setTimeout(function() {
+        setTimeout(function () {
             if (map) {
                 map.invalidateSize();
+                // Initialiser les événements de dessin après que la carte soit prête
+                initDrawEvents();
             }
         }, 500);
     }, 100);
@@ -523,26 +525,31 @@ function activateSpatialTool() {
     }
 }
 
-map.on(L.Draw.Event.CREATED, function (e) {
-    if (e.layerType === 'polyline') return;
-    let searchArea = e.layer.toGeoJSON();
-    let hits = [];
-    for (let name in geojsonData) {
-        hits = hits.concat(geojsonData[name].features.filter(f => {
-            try {
-                return turf.booleanIntersects(searchArea, f);
-            } catch (err) {
-                return false;
-            }
-        }));
-    }
-    displayResults(hits);
+// CORRECTION : Initialiser après que map soit créé
+function initDrawEvents() {
+    if (!map) return; // Vérifier que map existe
 
-    // Retirer le contrôle
-    if (drawControl && map.hasControl(drawControl)) {
-        map.removeControl(drawControl);
-    }
-});
+    map.on(L.Draw.Event.CREATED, function (e) {
+        if (e.layerType === 'polyline') return;
+        let searchArea = e.layer.toGeoJSON();
+        let hits = [];
+        for (let name in geojsonData) {
+            hits = hits.concat(geojsonData[name].features.filter(f => {
+                try {
+                    return turf.booleanIntersects(searchArea, f);
+                } catch (err) {
+                    return false;
+                }
+            }));
+        }
+        displayResults(hits);
+
+        // Retirer le contrôle
+        if (drawControl && map.hasControl(drawControl)) {
+            map.removeControl(drawControl);
+        }
+    });
+}
 
 // Outil Mesure
 function triggerMeasure(type) {
@@ -628,7 +635,7 @@ function activateGPS() {
 
     // Première position (pour centrer la carte)
     navigator.geolocation.getCurrentPosition(
-        function(position) {
+        function (position) {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
             const accuracy = position.coords.accuracy;
@@ -641,10 +648,10 @@ function activateGPS() {
 
             // Activer le suivi continu
             gpsWatchId = navigator.geolocation.watchPosition(
-                function(pos) {
+                function (pos) {
                     updateGPSMarker(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
                 },
-                function(error) {
+                function (error) {
                     console.error("Erreur GPS:", error);
                     showAlert("Erreur GPS: " + error.message, "warning");
                 },
@@ -658,9 +665,9 @@ function activateGPS() {
 
             showAlert(`Position trouvée (±${Math.round(accuracy)}m)`, "success");
         },
-        function(error) {
+        function (error) {
             let message = "Erreur lors de l'activation du GPS";
-            switch(error.code) {
+            switch (error.code) {
                 case error.PERMISSION_DENIED:
                     message = "Permission GPS refusée. Autorisez l'accès à votre position.";
                     break;
@@ -739,7 +746,7 @@ function toggleTOCPanel() {
     }
 
     // Recalculer la taille de la carte après l'animation
-    setTimeout(function() {
+    setTimeout(function () {
         if (map) {
             map.invalidateSize();
         }
@@ -762,7 +769,7 @@ function toggleLegend() {
 }
 
 // Initialiser l'état des panneaux au chargement
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Démarrer avec le panneau des couches ouvert
     const tocPanel = document.getElementById('toc-panel');
     if (tocPanel) {

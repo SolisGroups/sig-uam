@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projet SIG Web - 2026</title>
+    <title>Projet SIG Web</title>
 
     <!-- PWA Configuration -->
     <meta name="description" content="Système d'Information Géographique de l'Université Amadou Moctar Mbow">
     <meta name="theme-color" content="#3498db">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SIG UAM">
@@ -36,7 +37,6 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-measure/3.1.0/leaflet-measure.css" />
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.min.css" />
 
@@ -478,6 +478,28 @@
                     <button class="btn btn-sm btn-outline-info" onclick="triggerPrint()" title="Imprimer la carte">
                         <i class="fa fa-print"></i>
                     </button>
+                    <div class="btn-group ms-2" role="group">
+                        <button class="btn btn-sm btn-outline-success" onclick="geolocationManager.getCurrentLocation()"
+                            title="Localisation unique">
+                            <i class="fa fa-location-dot"></i> Localiser
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" id="btn-track-toggle" onclick="toggleTracking()"
+                            title="Démarrer le suivi GPS">
+                            <i class="fa fa-map-location-dot"></i> Suivi GPS
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" id="btn-track-export" onclick="exportTracking()"
+                            title="Exporter le trajet" style="display:none;">
+                            <i class="fa fa-download"></i> Exporter
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="showTrackingStats()"
+                            title="Statistiques du suivi" id="btn-track-stats" style="display:none;">
+                            <i class="fa fa-chart-bar"></i> Stats
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="clearTracking()" title="Effacer le suivi"
+                            id="btn-track-clear" style="display:none;">
+                            <i class="fa fa-trash"></i> Effacer
+                        </button>
+                    </div>
                 </div>
 
             </div>
@@ -485,6 +507,11 @@
     </nav>
 
     <div class="container-fluid p-0 d-flex" id="main-container">
+        <!-- ========================================
+             ZONE D'AFFICHAGE GÉOLOCALISATION
+             ======================================== -->
+        <div id="location-info"></div>
+
         <!-- ========================================
              PANNEAU DE COUCHES AMÉLIORÉ
              ======================================== -->
@@ -691,7 +718,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-measure/3.1.0/leaflet-measure.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.min.js"></script>
 
     <script src="js/leaflet.browser.print.min.js"></script>
@@ -702,7 +728,12 @@
         // Enregistrement du Service Worker pour PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sigweb-uam/sw.js')
+                // Déterminer le chemin du Service Worker (compatible avec Live Server et XAMPP)
+                const swPath = window.location.pathname.includes('/sigweb-uam/')
+                    ? '/sigweb-uam/sw.js'
+                    : './sw.js';
+
+                navigator.serviceWorker.register(swPath)
                     .then((registration) => {
                         console.log('✅ Service Worker enregistré avec succès:', registration.scope);
 
@@ -781,6 +812,121 @@
                 navbarNav.appendChild(installLi);
             }
         }
+    </script>
+
+    <script src="js/geolocation.js"></script>
+    <script>
+        // ===== GESTIONNAIRE GÉOLOCALISATION GLOBAL =====
+        let geolocationManager;
+
+        // Initialiser le gestionnaire de géolocalisation après le chargement de la carte
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                if (map) {
+                    geolocationManager = new GeolocationManager(map);
+                    console.log('[Géolocalisation] Gestionnaire initialisé');
+                }
+            }, 1000);
+        });
+
+        // ===== FONCTIONS DE CONTRÔLE GÉOLOCALISATION =====
+
+        /**
+         * Basculer le suivi GPS
+         */
+        function toggleTracking() {
+            if (!geolocationManager) {
+                alert('Le gestionnaire de géolocalisation n\'est pas initialisé');
+                return;
+            }
+
+            const btnTrack = document.getElementById('btn-track-toggle');
+
+            if (geolocationManager.trackingEnabled) {
+                geolocationManager.stopTracking();
+                btnTrack.classList.remove('active');
+                btnTrack.innerHTML = '<i class="fa fa-map-location-dot"></i> Suivi GPS';
+
+                // Masquer les boutons spécifiques au suivi
+                document.getElementById('btn-track-export').style.display = 'none';
+                document.getElementById('btn-track-stats').style.display = 'none';
+                document.getElementById('btn-track-clear').style.display = 'none';
+            } else {
+                geolocationManager.startTracking();
+                btnTrack.classList.add('active');
+                btnTrack.innerHTML = '<i class="fa fa-circle text-danger"></i> Suivi en cours...';
+
+                // Afficher les boutons spécifiques au suivi
+                document.getElementById('btn-track-export').style.display = 'inline-block';
+                document.getElementById('btn-track-stats').style.display = 'inline-block';
+                document.getElementById('btn-track-clear').style.display = 'inline-block';
+            }
+        }
+
+        /**
+         * Exporter le trajet en GeoJSON
+         */
+        function exportTracking() {
+            if (!geolocationManager || geolocationManager.locationHistory.length === 0) {
+                alert('Aucun trajet à exporter');
+                return;
+            }
+
+            const geojson = geolocationManager.exportTrackingAsGeoJSON();
+            const dataStr = JSON.stringify(geojson, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tracking-${new Date().toISOString().slice(0, 10)}.geojson`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            geolocationManager.showNotification('Trajet exporté avec succès', 'success');
+        }
+
+        /**
+         * Afficher les statistiques de suivi
+         */
+        function showTrackingStats() {
+            if (!geolocationManager) return;
+
+            const stats = geolocationManager.getTrackingStats();
+            if (!stats) {
+                alert('Aucune donnée de suivi disponible');
+                return;
+            }
+
+            const message = `
+        📊 STATISTIQUES DE SUIVI
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        📍 Points enregistrés: ${stats.totalPoints}
+        🛣️ Distance totale: ${stats.totalDistance} km
+        ⏱️ Durée: ${Math.floor(stats.duration / 60)}m ${stats.duration % 60}s
+        📏 Précision moyenne: ±${stats.averageAccuracy}m
+        🕐 Début: ${stats.startTime}
+        🕐 Fin: ${stats.endTime}
+            `;
+
+            alert(message);
+        }
+
+        /**
+         * Effacer le suivi
+         */
+        function clearTracking() {
+            if (confirm('Êtes-vous sûr de vouloir effacer le trajet?')) {
+                geolocationManager.clear();
+                document.getElementById('btn-track-toggle').classList.remove('active');
+                document.getElementById('btn-track-toggle').innerHTML = '<i class="fa fa-map-location-dot"></i> Suivi GPS';
+                document.getElementById('btn-track-export').style.display = 'none';
+                document.getElementById('btn-track-stats').style.display = 'none';
+                document.getElementById('btn-track-clear').style.display = 'none';
+                geolocationManager.showNotification('Trajet effacé', 'info');
+            }
+        }
 
         // Détecte si l'app est lancée en mode PWA
         window.addEventListener('DOMContentLoaded', () => {
@@ -796,6 +942,7 @@
             }
         });
     </script>
+
 </body>
 
 </html>

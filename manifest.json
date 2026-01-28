@@ -1,13 +1,14 @@
 {
-  "name": "SIG Web UAM",
+  "name": "SIG Web UAM - Cartographie Interactive",
   "short_name": "SIG UAM",
-  "description": "Système d'Information Géographique de l'Université Adventiste de Mudende",
+  "description": "Système d'Information Géographique de l'Université Amadou Moctar Mbow avec géolocalisation et accès hors ligne",
   "start_url": "/sigweb-uam/index.html",
   "display": "standalone",
   "background_color": "#2c3e50",
   "theme_color": "#3498db",
   "orientation": "any",
   "scope": "/sigweb-uam/",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "img/icons/icon-72x72.png",
@@ -58,7 +59,24 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["education", "utilities", "productivity"],
+  "categories": [
+    "education",
+    "utilities",
+    "productivity"
+  ],
+  "permissions": [
+    "geolocation"
+  ],
+  "share_target": {
+    "action": "/sigweb-uam/index.html",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
   "screenshots": [
     {
       "src": "img/screenshots/desktop-screenshot.png",
